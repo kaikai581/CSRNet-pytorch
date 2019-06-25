@@ -1,3 +1,4 @@
+import copy
 import torch.nn as nn
 import torch
 from torchvision import models
@@ -15,8 +16,13 @@ class CSRNet(nn.Module):
         if not load_weights:
             mod = models.vgg16(pretrained = True)
             self._initialize_weights()
-            for i in range(len(self.frontend.state_dict().items())):
-                self.frontend.state_dict().items()[i][1].data[:] = mod.state_dict().items()[i][1].data[:]
+            # There are keys in vgg not in the frontend.
+            # Besides, names of the keys in vgg are prefixed with "features".
+            frontend_key_list = list(self.frontend.state_dict().keys())
+            mod_key_list = list(mod.state_dict().keys())
+            for i in range(len(frontend_key_list)):
+                self.frontend.state_dict()[frontend_key_list[i]].data[:] = mod.state_dict()[mod_key_list[i]].data[:]
+
     def forward(self,x):
         x = self.frontend(x)
         x = self.backend(x)
@@ -49,4 +55,4 @@ def make_layers(cfg, in_channels = 3,batch_norm=False,dilation = False):
             else:
                 layers += [conv2d, nn.ReLU(inplace=True)]
             in_channels = v
-    return nn.Sequential(*layers)                
+    return nn.Sequential(*layers)

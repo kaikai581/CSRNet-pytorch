@@ -23,6 +23,18 @@ transform=transforms.Compose([
                    ])
 
 img_paths = []
-img_paths.append('/data/slin/singularity/test_projects/crowd_counting/basketball_team_1.jpg')
+img_paths.append('/data/slin/singularity/test_projects/crowd_counting/testing_img')
 
 model = CSRNet()
+
+# Pretrained weights downloaded from https://drive.google.com/file/d/1KY11yLorynba14Sg7whFOfVeh2ja02wm/view?usp=sharing
+checkpoint = torch.load('../0model_best.pth.tar', map_location='cpu')
+model.load_state_dict(checkpoint['state_dict'])
+
+for i in range(len(img_paths)):
+    img = 255.0 * F.to_tensor(Image.open(img_paths[i]).convert('RGB'))
+    img[0,:,:]=img[0,:,:]-92.8207477031
+    img[1,:,:]=img[1,:,:]-95.2757037428
+    img[2,:,:]=img[2,:,:]-104.877445883
+    output = model(img.unsqueeze(0))
+    print(output.detach().sum().numpy())
