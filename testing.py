@@ -22,8 +22,6 @@ transform=transforms.Compose([
                                      std=[0.229, 0.224, 0.225]),
                    ])
 
-img_paths = []
-img_paths.append('/data/slin/singularity/test_projects/crowd_counting/testing_img')
 
 model = CSRNet()
 
@@ -31,10 +29,29 @@ model = CSRNet()
 checkpoint = torch.load('../0model_best.pth.tar', map_location='cpu')
 model.load_state_dict(checkpoint['state_dict'])
 
-for i in range(len(img_paths)):
-    img = 255.0 * F.to_tensor(Image.open(img_paths[i]).convert('RGB'))
-    img[0,:,:]=img[0,:,:]-92.8207477031
-    img[1,:,:]=img[1,:,:]-95.2757037428
-    img[2,:,:]=img[2,:,:]-104.877445883
-    output = model(img.unsqueeze(0))
-    print(output.detach().sum().numpy())
+# An unsuccessful attempt
+# img_paths = []
+# img_paths.append('/data/slin/singularity/test_projects/crowd_counting/testing_img')
+# for i in range(len(img_paths)):
+#     img = 255.0 * F.to_tensor(Image.open(img_paths[i]).convert('RGB'))
+#     img[0,:,:]=img[0,:,:]-92.8207477031
+#     img[1,:,:]=img[1,:,:]-95.2757037428
+#     img[2,:,:]=img[2,:,:]-104.877445883
+#     output = model(img.unsqueeze(0))
+#     print(output.detach().sum().numpy())
+
+# Code adapted from https://www.analyticsvidhya.com/blog/2019/02/building-crowd-counting-model-python/
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5,8))
+imgpn = '/data/slin/singularity/test_projects/crowd_counting/testing_img'
+img = transform(Image.open(imgpn).convert('RGB'))
+output = model(img.unsqueeze(0))
+print('Predicted Count: ', int(output.detach().cpu().sum().numpy()))
+# Show the predicted density map.
+temp = np.asarray(output.detach().cpu().reshape(output.detach().cpu().shape[2],output.detach().cpu().shape[3]))
+ax1.imshow(temp, cmap=CM.jet)
+ax1.set_title('Predicted Density Map')
+# Show the original picture.
+ax2.imshow(plt.imread(imgpn))
+ax2.set_title('Predicted Count: {}'.format(int(output.detach().cpu().sum().numpy())))
+plt.tight_layout()
+plt.savefig('../prediction.jpg')
