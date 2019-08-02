@@ -45,7 +45,7 @@ fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5,8))
 imgpn = '/data/slin/singularity/test_projects/crowd_counting/testing_img'
 img = transform(Image.open(imgpn).convert('RGB'))
 output = model(img.unsqueeze(0))
-print('Predicted Count: ', int(output.detach().cpu().sum().numpy()))
+print('Predicted Count:', int(output.detach().cpu().sum().numpy()))
 # Show the predicted density map.
 temp = np.asarray(output.detach().cpu().reshape(output.detach().cpu().shape[2],output.detach().cpu().shape[3]))
 ax1.imshow(temp, cmap=CM.jet)

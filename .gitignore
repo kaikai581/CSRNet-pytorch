@@ -1,2 +1,5 @@
 # avoid ONNX model files
 *.onnx
+
+# weird hidden files
+._*.py
